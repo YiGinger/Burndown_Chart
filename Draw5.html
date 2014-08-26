@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>Burndown Chart for Fall Intern from Yi Jiang</title>
+
+    <script src="http://s1.bdstatic.com/r/www/cache/ecom/esl/1-6-10/esl.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+    <script>
+        var result=[];//object contains accept date and estimate
+        var xmlhttp;//request
+        var xmldoc;//response text from website, string
+        var stories;//json object of response from website
+        var dates=[];var Budgets=[];var estimates=[];var chart_data=[];var s_data=[];
+    var CSVdata=[{
+ "Budget": "$1,000.00",
+"AcceptDate": "18-Jul-14" 
+},{
+ "Budget": "$2,000.00",
+"AcceptDate": "25-Jul-14" 
+},{
+ "Budget": "$1,000.00",
+"AcceptDate": "1-Aug-14" 
+},{
+ "Budget": "$2,000.00",
+"AcceptDate": "8-Aug-14" 
+},{
+ "Budget": "$3,000.00",
+"AcceptDate": "15-Aug-14" 
+}]
+    //change the budget into float, acceptdate into Date
+    for(i=0;i<CSVdata.length;i++){
+    CSVdata[i].Budget=CSVdata[i].Budget.replace("$","")
+    CSVdata[i].Budget=CSVdata[i].Budget.replace(",","")
+    CSVdata[i].Budget=parseFloat(CSVdata[i].Budget)
+    CSVdata[i].AcceptDate=new Date(CSVdata[i].AcceptDate)
+    }
+    
+
+        require.config({
+            paths:{ 
+                'echarts' : 'http://echarts.baidu.com/build/echarts',
+                'echarts/chart/scatter' : 'http://echarts.baidu.com/build/echarts'
+            }
+        });
+    
+    
+    
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+        
+        
+        
+    xmlhttp.onreadystatechange=function()
+        {
+        if (xmlhttp.readyState==4 && xmlhttp.status==200)
+        {//response
+           xmldoc=xmlhttp.responseText;
+           stories=JSON.parse(xmldoc);
+            var print_str="";
+            for( i=0;i<stories.length;i++){
+                result[i]={};
+                result[i].estimate=stories[i].estimate;
+                result[i].accepted_at=new Date(stories[i].accepted_at)
+                print_str=print_str+"Date:"+result[i].accepted_at.toDateString()+", Estimate:"+result[i].estimate+"\n"
+                
+
+            }
+      // alert(print_str);
+        //the object result is just what we need
+            //merge the data
+            for(i=0;i<result.length;i++){
+                for(j=0;j<CSVdata.length;j++){
+                if(result[i].accepted_at.toDateString()==CSVdata[j].AcceptDate.toDateString()){
+                result[i].Budget=CSVdata[j].Budget
+                }
+                }
+            }
+            
+            for(i=0;i<result.length+1;i++){
+            if(i==0) {
+                dates[i]=new Date(result[0].accepted_at-7*24*3600*10000);
+                Budgets[i]=0;
+                estimates[result.length]=0;
+            }
+            else {
+                dates[i]=result[i-1].accepted_at;
+                Budgets[i]=result[i-1].Budget+Budgets[i-1];
+                estimates[result.length-i]=result[result.length-i].estimate+estimates[result.length-i+1]
+            }
+            }
+            chart_data={'AcceptDate':dates,'AccuBudget':Budgets,'Remain_points':estimates};  
+            for(i=0;i<chart_data.AcceptDate.length;i++){
+            s_data[i]=[chart_data.AccuBudget[i],chart_data.Remain_points[i]];
+            }
+            console.log(s_data);
+            console.log(chart_data);
+            
+            //echarts
+                
+            
+
+        require(
+            [
+                'echarts',
+                'echarts/chart/scatter'
+            ],
+            function (ec) {
+
+                var myChart = ec.init(document.getElementById('main')); 
+                
+                var option = {
+    title : {
+        text: 'Burndown Chart from Yi Jiang',
+        subtext: 'Fall Intern Project'
+    },
+    tooltip : {
+        trigger: 'axis',
+        showDelay : 0,
+        axisPointer:{
+            type : 'cross',
+            lineStyle: {
+                type : 'dashed',
+                width : 1
+            }
+        }
+        
+    },
+    legend: {
+        data:['Complexity Points']
+    },
+    toolbox: {
+        show : true,
+        feature : {
+            mark : {show: true,title:'mark'},
+            dataZoom : {show: true,title:'dataZoom'},
+            dataView : {show: true, title: 'dataView'},
+            restore : {show: true,title:'restore'},
+            saveAsImage : {show: true,title:'save as image'}
+        }
+    },
+    xAxis : [
+        {
+            type : 'value',
+            scale:true,
+            axisLabel : {
+                formatter: '$ {value}'
+            },
+            name: 'Budget',
+            splitNumber: 9
+        }
+    ],
+    yAxis : [
+        {
+            type : 'value',
+            axisLabel : {
+                formatter: '{value} points'
+            },
+            name:'Remaining Points',
+            splitNumber:5
+        }
+    ],
+    series : [
+        {
+            symbol:'emptyCircle',
+            color:'red',
+            name:'Complexity Points',
+            type:'scatter',
+            data: s_data ,
+
+        }
+    ]
+};
+                    
+                console.log(option.series)
+                    
+                    
+        
+ 
+                myChart.setOption(option); 
+            }
+        );
+            
+            
+
+        }
+        }
+xmlhttp.open("GET","https://www.pivotaltracker.com/services/v5/projects/1151258/stories",true);
+xmlhttp.setRequestHeader("X-TrackerToken","0a1021e3dce4529136474517da486062");
+xmlhttp.send();   
+</script>
+    
+    
+    
+</head>
+<body>
+    <div id="main" style="height:400px;width:900px"></div>
+    <script type="text/javascript">
+
+    </script>
+
+</body>
