@@ -132,9 +132,6 @@ else
         }
         
     },
-    legend: {
-        data:['Complexity Points']
-    },
     toolbox: {
         show : true,
         feature : {
@@ -152,6 +149,13 @@ else
             axisLabel : {
                 formatter: '$ {value}'
             },
+            axisLine : {
+                lineStyle:{
+                color:'#333',
+                width:2,
+                type: 'solid'
+                }
+            },
             name: 'Budget',
             splitNumber: 9
         }
@@ -162,14 +166,26 @@ else
             axisLabel : {
                 formatter: '{value} points'
             },
+           axisLine : {
+                lineStyle:{
+                color:'#333',
+                width:2,
+                type: 'solid'
+                }
+            },
             name:'Remaining Points',
             splitNumber:5
         }
     ],
     series : [
         {
-            symbol:'emptyCircle',
-            color:'red',
+            symbol:'Circle',
+            symbolSize:5,
+            itemStyle:{
+                normal:{
+                color:'#0066FF'
+                }
+            },
             name:'Complexity Points',
             type:'scatter',
             data: s_data ,
